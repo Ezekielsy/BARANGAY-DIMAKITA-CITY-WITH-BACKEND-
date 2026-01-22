@@ -1,37 +1,144 @@
 <?php
 include "db/config.php";
+
+// Initialize success variable
+$success_control_no = "";
+
+// Handle Form Submission (Request)
+if (isset($_POST['submit'])) {
+    $control_no = "BRGY-" . date("Y") . "-" . rand(10000,99999);
+    $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
+    $address  = mysqli_real_escape_string($conn, $_POST['address']);
+    $contact  = mysqli_real_escape_string($conn, $_POST['contact']);
+    $document = mysqli_real_escape_string($conn, $_POST['document_type']);
+    $purpose  = mysqli_real_escape_string($conn, $_POST['purpose']);
+    $valid_id = mysqli_real_escape_string($conn, $_POST['valid_id']);
+
+    $sql = "INSERT INTO requests (control_no, fullname, address, contact, document_type, purpose, valid_id)
+            VALUES ('$control_no','$fullname','$address','$contact','$document','$purpose','$valid_id')";
+
+    if (mysqli_query($conn, $sql)) {
+        $success_control_no = $control_no;
+    }
+}
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barangay Document System</title>
+  
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
+    /* --- THEME SETTINGS --- */
+    :root {
+      --primary-color: #2a5298;
+      --secondary-color: #1e3c72;
+      --accent-color: #00c6ff;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: #f4f6f9;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      overflow-x: hidden;
     }
-    .navbar-brand {
-      letter-spacing: .5px;
+
+    /* --- HERO SECTION --- */
+    .hero {
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+      color: white;
+      padding: 100px 0 80px;
+      margin-bottom: 50px;
+      border-bottom-left-radius: 50px;
+      border-bottom-right-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    .page-title {
+    
+    .hero h1 {
       font-weight: 700;
-      letter-spacing: .6px;
+      font-size: 3rem;
+      margin-bottom: 20px;
     }
-    .card {
+
+    .btn-hero {
+      background-color: white;
+      color: var(--primary-color);
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn-hero:hover {
+      background-color: var(--accent-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    /* --- INFO CARDS --- */
+    .service-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+      border: 1px solid #eee;
+    }
+    .service-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+      border-color: var(--accent-color);
+    }
+    .icon-box {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    /* --- FORM STYLES --- */
+    .main-card {
       border: none;
-      border-radius: 1rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
     }
     .form-control, .form-select {
-      border-radius: .6rem;
+      border-radius: 10px;
+      padding: 12px;
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
     }
-    .alert {
-      border-radius: .6rem;
+    .form-control:focus, .form-select:focus {
+      background-color: #fff;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
     }
+
+    /* --- FOOTER --- */
     footer {
-      font-size: .85rem;
-      color: #6c757d;
+      background: #343a40;
+      color: #adb5bd;
+      padding: 40px 0;
+      margin-top: 80px;
+    }
+
+    /* --- ANIMATION UTILS --- */
+    .fade-in-up {
+      animation: fadeInUp 0.8s ease-out;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -39,224 +146,291 @@ include "db/config.php";
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
-    <span class="navbar-brand fw-bold">
-      Barangay Dimakita, Lupalok City
-    </span>
-
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+<nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-absolute w-100" style="z-index: 9;">
+  <div class="container mt-2">
+    <a class="navbar-brand fw-bold" href="#">
+      <i class="bi bi-building-fill"></i> Brgy. Dimakita
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="#request">Request</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#track" onclick="showTrack()">Track</a>
-        </li>
+        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="#request_section">Request</a></li>
+        <li class="nav-item"><a class="nav-link" href="#track_section" onclick="showTrack()">Track</a></li>
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- REQUEST FORM -->
-<div class="container mt-5" id="request">
+<!-- HERO SECTION -->
+<header class="hero text-center d-flex align-items-center">
+  <div class="container fade-in-up">
+    <span class="badge bg-white text-primary mb-3 px-3 py-2 rounded-pill text-uppercase" style="letter-spacing: 2px; font-size: 0.8rem;">E-Government Services</span>
+    <h1>Barangay Online Portal</h1>
+    <p class="lead opacity-75 mb-4 col-md-8 mx-auto">
+      Experience fast, transparent, and convenient document processing for the people of Lupalok City.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="#request_section" class="btn btn-hero shadow">Request Document</a>
+      <a href="#track_section" onclick="showTrack()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold" style="border-width: 2px;">Track Status</a>
+    </div>
+  </div>
+</header>
+
+<!-- SERVICES GRID -->
+<div class="container mb-5" id="services">
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="service-card">
+        <div class="icon-box"><i class="bi bi-file-earmark-text"></i></div>
+        <h5 class="fw-bold">Certifications</h5>
+        <p class="text-muted small">Easily request Barangay Clearance, Indigency, and Residency certificates.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="service-card">
+        <div class="icon-box"><i class="bi bi-person-vcard"></i></div>
+        <h5 class="fw-bold">Barangay ID</h5>
+        <p class="text-muted small">Apply for a new ID or renew your existing valid Barangay identification.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="service-card">
+        <div class="icon-box"><i class="bi bi-shield-check"></i></div>
+        <h5 class="fw-bold">Reports & Blotter</h5>
+        <p class="text-muted small">File incident reports or request blotter copies securely online.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT AREA -->
+<div class="container" id="request_section">
   <div class="row justify-content-center">
-    <div class="col-md-7">
+    <div class="col-lg-8">
 
-      <div class="card shadow">
-        <div class="card-body p-4">
-
-          <div class="text-center mb-4">
-            <h4 class="page-title">Barangay Document Request</h4>
-            <p class="text-muted small mb-0">
-              Official Online Request System of Barangay Dimakita
-            </p>
+      <!-- REQUEST CARD -->
+      <div class="card main-card mb-5 bg-white">
+        
+        <!-- SUCCESS STATE -->
+        <?php if ($success_control_no != ""): ?>
+          <div class="card-body p-5 text-center fade-in-up">
+            <div class="mb-4">
+              <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+            </div>
+            <h2 class="fw-bold text-dark">Request Submitted!</h2>
+            <p class="text-muted mb-4">Your document request is now being processed.</p>
+            
+            <div class="alert alert-success d-inline-block px-5 py-3 rounded-4 border-success">
+              <small class="text-uppercase fw-bold opacity-75">Your Control Number</small>
+              <div class="display-6 fw-bold mt-1" style="letter-spacing: 2px;">
+                <?php echo $success_control_no; ?>
+              </div>
+            </div>
+            
+            <p class="text-muted mt-3 small">Please take a screenshot or save this number.</p>
+            
+            <div class="mt-5">
+              <a href="index.php" class="btn btn-outline-primary rounded-pill px-4">Submit Another Request</a>
+            </div>
           </div>
 
-          <form method="POST">
+        <!-- FORM STATE -->
+        <?php else: ?>
+          <div class="card-body p-5">
+            <div class="d-flex align-items-center mb-4">
+               <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                 <i class="bi bi-pencil-fill"></i>
+               </div>
+               <div>
+                 <h4 class="fw-bold mb-0">Fill Out Request Form</h4>
+                 <small class="text-muted">Please provide accurate details.</small>
+               </div>
+            </div>
+            
+            <form method="POST">
+              <div class="row g-3">
+                <div class="col-md-12">
+                   <label class="form-label small text-muted fw-bold">FULL NAME</label>
+                   <input type="text" name="fullname" class="form-control" placeholder="First Middle Last" required>
+                </div>
 
-            <input type="text" name="fullname" class="form-control mb-3"
-              placeholder="Full Name" required>
+                <div class="col-md-6">
+                   <label class="form-label small text-muted fw-bold">CONTACT NO.</label>
+                   <input type="text" name="contact" class="form-control" placeholder="09XX-XXX-XXXX" required>
+                </div>
+                
+                <div class="col-md-6">
+                   <label class="form-label small text-muted fw-bold">VALID ID TYPE</label>
+                   <select name="valid_id" class="form-select" required>
+                      <option value="">-- Select ID --</option>
+                      <option>Barangay ID</option>
+                      <option>National ID</option>
+                      <option>Voter's ID</option>
+                      <option>Driver's License</option>
+                    </select>
+                </div>
 
-            <textarea name="address" class="form-control mb-3"
-              placeholder="Complete Address" required></textarea>
+                <div class="col-md-12">
+                   <label class="form-label small text-muted fw-bold">ADDRESS</label>
+                   <input type="text" name="address" class="form-control" placeholder="House No., Street, Purok" required>
+                </div>
 
-            <input type="text" name="contact" class="form-control mb-3"
-              placeholder="Contact Number" required>
+                <div class="col-md-12">
+                    <hr class="my-4 text-muted opacity-25">
+                </div>
 
-            <!-- DOCUMENT TYPE -->
-            <select name="document_type" id="document_type"
-              class="form-select mb-2" required onchange="showTime()">
-              <option value="">-- Select Document --</option>
-              <option value="Barangay Clearance">Barangay Clearance</option>
-              <option value="Barangay Certificate">Barangay Certificate</option>
-              <option value="Certificate of Residency">Certificate of Residency</option>
-              <option value="Certificate of Indigency">Certificate of Indigency</option>
-              <option value="Certificate of Good Moral Character">Certificate of Good Moral Character</option>
-              <option value="Business Clearance">Business Clearance</option>
-              <option value="Barangay Business Permit">Barangay Business Permit</option>
-              <option value="Barangay ID Application">Barangay ID Application</option>
-              <option value="Barangay ID Renewal">Barangay ID Renewal</option>
-              <option value="Senior Citizen Certification">Senior Citizen Certification</option>
-              <option value="PWD Certification">PWD Certification</option>
-              <option value="Blotter Report Request">Blotter Report Request</option>
-              <option value="Incident Report">Incident Report</option>
-            </select>
+                <div class="col-md-12">
+                    <label class="form-label small text-muted fw-bold">DOCUMENT NEEDED</label>
+                    <select name="document_type" id="document_type" class="form-select form-select-lg mb-2 border-primary" required onchange="showTime()">
+                      <option value="">-- Choose Document --</option>
+                      <option value="Barangay Clearance">Barangay Clearance</option>
+                      <option value="Barangay Certificate">Barangay Certificate</option>
+                      <option value="Certificate of Residency">Certificate of Residency</option>
+                      <option value="Certificate of Indigency">Certificate of Indigency</option>
+                      <option value="Certificate of Good Moral Character">Good Moral Character</option>
+                      <option value="Business Clearance">Business Clearance</option>
+                      <option value="Barangay Business Permit">Barangay Business Permit</option>
+                      <option value="Barangay ID Application">Barangay ID Application</option>
+                      <option value="Barangay ID Renewal">Barangay ID Renewal</option>
+                      <option value="Senior Citizen Certification">Senior Citizen Certification</option>
+                      <option value="PWD Certification">PWD Certification</option>
+                      <option value="Blotter Report Request">Blotter Report Request</option>
+                      <option value="Incident Report">Incident Report</option>
+                    </select>
 
-            <!-- PROCESSING TIME -->
-            <div id="processing_time" class="alert alert-info d-none mb-3"></div>
+                    <div id="processing_time" class="alert alert-info d-none d-flex align-items-center py-2">
+                        <i class="bi bi-clock me-2"></i>
+                        <span id="time_text" class="small fw-bold"></span>
+                    </div>
+                </div>
 
-            <textarea name="purpose" class="form-control mb-3"
-              placeholder="Purpose of Request" required></textarea>
-
-            <select name="valid_id" class="form-select mb-3" required>
-              <option value="">-- Valid ID Presented --</option>
-              <option>Barangay ID</option>
-              <option>National ID</option>
-              <option>Voter's ID</option>
-              <option>Driver's License</option>
-            </select>
-
-            <button name="submit" class="btn btn-primary w-100">
-              Submit Request
-            </button>
-          </form>
-
-          <?php
-          if (isset($_POST['submit'])) {
-
-            $control_no = "BRGY-" . date("Y") . "-" . rand(10000,99999);
-
-            $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
-            $address  = mysqli_real_escape_string($conn, $_POST['address']);
-            $contact  = mysqli_real_escape_string($conn, $_POST['contact']);
-            $document = mysqli_real_escape_string($conn, $_POST['document_type']);
-            $purpose  = mysqli_real_escape_string($conn, $_POST['purpose']);
-            $valid_id = mysqli_real_escape_string($conn, $_POST['valid_id']);
-
-            $sql = "INSERT INTO requests
-              (control_no, fullname, address, contact, document_type, purpose, valid_id)
-              VALUES
-              ('$control_no','$fullname','$address','$contact','$document','$purpose','$valid_id')";
-
-            if (mysqli_query($conn, $sql)) {
-              echo "
-              <div class='alert alert-success mt-4 text-center'>
-                <h5 class='fw-bold mb-2'>Request Successfully Submitted</h5>
-                <p class='mb-1'>Please keep your control number for tracking.</p>
-                <p class='fw-bold'>Control No: $control_no</p>
-              </div>";
-            }
-          }
-          ?>
-
-        </div>
+                <div class="col-md-12">
+                   <label class="form-label small text-muted fw-bold">PURPOSE</label>
+                   <textarea name="purpose" class="form-control" rows="2" placeholder="Where will you use this document?" required></textarea>
+                </div>
+                
+                <div class="col-12 mt-4">
+                  <button name="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                    Submit Request <i class="bi bi-arrow-right ms-2"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        <?php endif; ?>
+        
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- TRACK REQUEST -->
-<div class="container mt-5 <?php echo isset($_POST['track']) ? '' : 'd-none'; ?>" id="track">
+<!-- TRACK SECTION -->
+<!-- Logic: If track was posted, remove 'd-none', otherwise keep it hidden -->
+<div class="container pb-5 <?php echo isset($_POST['track']) ? '' : 'd-none'; ?>" id="track_section">
   <div class="row justify-content-center">
-    <div class="col-md-5">
+    <div class="col-md-6">
+       <div class="card main-card border-top border-4 border-success">
+         <div class="card-body p-5 text-center">
+            <h4 class="fw-bold mb-3">Track Your Request</h4>
+            
+            <form method="POST">
+                <div class="input-group mb-3">
+                    <!-- Added VALUE attribute here to keep the number visible -->
+                    <input type="text" name="track_no" 
+                           class="form-control form-control-lg" 
+                           placeholder="Enter Control No." 
+                           value="<?php echo isset($_POST['track_no']) ? htmlspecialchars($_POST['track_no']) : ''; ?>"
+                           required>
+                    <button name="track" class="btn btn-success px-4">Search</button>
+                </div>
+            </form>
 
-      <div class="card shadow">
-        <div class="card-body p-4 text-center">
+            <?php
+            if (isset($_POST['track'])) {
+              $code = mysqli_real_escape_string($conn, $_POST['track_no']);
+              $res = mysqli_query($conn, "SELECT status FROM requests WHERE control_no='$code'");
 
-          <h4 class="page-title mb-1">Track Your Request</h4>
-          <p class="text-muted small mb-3">
-            Enter your control number to check request status
-          </p>
-
-          <form method="POST">
-            <input type="text" name="track_no"
-              class="form-control mb-3"
-              placeholder="Enter Control Number" required>
-
-            <button name="track" class="btn btn-success w-100">
-              Track Request
-            </button>
-          </form>
-
-          <?php
-          if (isset($_POST['track'])) {
-            $code = mysqli_real_escape_string($conn, $_POST['track_no']);
-
-            $res = mysqli_query($conn,
-              "SELECT status FROM requests WHERE control_no='$code'");
-
-            if (mysqli_num_rows($res) > 0) {
-              $row = mysqli_fetch_assoc($res);
-
-              $badge = "bg-warning";
-              if ($row['status']=="Approved") $badge="bg-success";
-              if ($row['status']=="Released") $badge="bg-primary";
-
-              echo "
-              <div class='alert alert-light mt-3'>
-                Status:
-                <span class='badge $badge'>{$row['status']}</span>
-              </div>";
-            } else {
-              echo "
-              <div class='alert alert-danger mt-3'>
-                Control Number Not Found
-              </div>";
+              if (mysqli_num_rows($res) > 0) {
+                $row = mysqli_fetch_assoc($res);
+                $st = $row['status'];
+                $cls = "bg-warning"; 
+                if($st=="Approved") $cls="bg-success";
+                if($st=="Released") $cls="bg-primary";
+                
+                // Status "Flash" Display
+                echo "<div class='mt-4 fade-in-up p-3 bg-light rounded border border-secondary border-opacity-25'>
+                        <h6 class='text-muted small text-uppercase mb-2'>Current Status</h6>
+                        <span class='badge $cls fs-4 px-4 py-2 rounded-pill shadow-sm'>$st</span>
+                      </div>";
+              } else {
+                echo "<div class='alert alert-danger mt-3 fade-in-up'>
+                        <i class='bi bi-exclamation-circle-fill'></i> Control Number Not Found
+                      </div>";
+              }
             }
-          }
-          ?>
-
-        </div>
-      </div>
-
+            ?>
+         </div>
+       </div>
     </div>
   </div>
 </div>
 
-<footer class="text-center mt-5 mb-3">
-  © 2026 Barangay Document System
+<footer class="text-center">
+  <div class="container">
+    <p class="mb-0 fw-bold">Barangay Dimakita, Lupalok City</p>
+    <small class="opacity-50">© 2026 Document Request System</small>
+  </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-function showTrack() {
-  let t = document.getElementById("track");
-  t.classList.remove("d-none");
-  t.scrollIntoView({ behavior: "smooth" });
+// Prevent Resubmission
+if ( window.history.replaceState ) {
+  window.history.replaceState( null, null, window.location.href );
 }
+
+function showTrack() {
+  let t = document.getElementById("track_section");
+  t.classList.remove("d-none");
+  setTimeout(() => {
+      t.scrollIntoView({ behavior: "smooth" });
+  }, 100);
+}
+
+// AUTO SCROLL TO TRACKING RESULT
+// If PHP performed a tracking search, automatically scroll down to the section
+<?php if(isset($_POST['track'])): ?>
+document.addEventListener("DOMContentLoaded", function() {
+    showTrack();
+});
+<?php endif; ?>
 
 function showTime() {
   let doc = document.getElementById("document_type").value;
   let box = document.getElementById("processing_time");
+  let txt = document.getElementById("time_text");
 
   let times = {
-    "Barangay Clearance": "1 working day",
-    "Barangay Certificate": "Same day release",
-    "Certificate of Residency": "1–2 working days",
-    "Certificate of Indigency": "1–2 working days",
-    "Certificate of Good Moral Character": "2 working days",
-    "Business Clearance": "2–3 working days",
-    "Barangay Business Permit": "3–5 working days",
-    "Barangay ID Application": "5–7 working days",
-    "Barangay ID Renewal": "3–5 working days",
-    "Senior Citizen Certification": "1–2 working days",
-    "PWD Certification": "1–2 working days",
-    "Blotter Report Request": "2–3 working days",
-    "Incident Report": "2–3 working days"
+    "Barangay Clearance": "Processing: 1 working day",
+    "Barangay Certificate": "Processing: Same day release",
+    "Certificate of Residency": "Processing: 1–2 working days",
+    "Certificate of Indigency": "Processing: 1–2 working days",
+    "Certificate of Good Moral Character": "Processing: 2 working days",
+    "Business Clearance": "Processing: 2–3 working days",
+    "Barangay Business Permit": "Processing: 3–5 working days",
+    "Barangay ID Application": "Processing: 5–7 working days",
+    "Barangay ID Renewal": "Processing: 3–5 working days",
+    "Senior Citizen Certification": "Processing: 1–2 working days",
+    "PWD Certification": "Processing: 1–2 working days",
+    "Blotter Report Request": "Processing: 2–3 working days",
+    "Incident Report": "Processing: 2–3 working days"
   };
 
   if (times[doc]) {
-    box.innerHTML = `
-      <strong>Estimated Processing Time</strong><br>
-      <span class="text-muted">${times[doc]}</span>
-    `;
+    txt.innerText = times[doc];
     box.classList.remove("d-none");
   } else {
     box.classList.add("d-none");

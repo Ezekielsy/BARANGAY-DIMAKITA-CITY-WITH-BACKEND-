@@ -39,6 +39,9 @@ if (isset($_POST['update'])) {
 
     // Execute and check
     if (mysqli_query($conn, $sql)) {
+        // Refresh row data to show updated status immediately
+        $row['status'] = $status;
+        $row['admin_remarks'] = $remarks; 
         $msg = "Request updated successfully!";
     } else {
         $error = "Update failed: " . mysqli_error($conn);
@@ -46,70 +49,227 @@ if (isset($_POST['update'])) {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Update Request</title>
+  
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7f6;
+    }
+
+    /* Navbar Gradient */
+    .navbar-custom {
+      background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Cards */
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    .card-header-custom {
+      background-color: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 20px 25px;
+    }
+
+    /* Details List */
+    .info-group {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px dashed #eee;
+    }
+    .info-group:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6c757d;
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .info-value {
+      font-weight: 500;
+      color: #2c3e50;
+    }
+
+    /* Form Elements */
+    .form-control, .form-select {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #dee2e6;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #2a5298;
+      box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+    }
+
+    .btn-update {
+      background: #2a5298;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn-update:hover {
+      background: #1e3c72;
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-dark navbar-custom sticky-top mb-5">
   <div class="container">
-    <span class="navbar-brand fw-bold">Barangay Document System</span>
+    <span class="navbar-brand fw-bold">
+      <i class="bi bi-speedometer2 me-2"></i> Admin Portal
+    </span>
+    <a href="admin.php" class="btn btn-sm btn-outline-light rounded-pill px-3">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
   </div>
 </nav>
 
-<div class="container mt-5">
-  <div class="card shadow rounded-4">
-    <div class="card-body">
+<div class="container pb-5">
 
-      <h4 class="fw-bold mb-3">Request Details</h4>
+  <div class="row g-4">
+    
+    <!-- LEFT COLUMN: REQUEST INFO -->
+    <div class="col-lg-7">
+      <div class="card h-100">
+        <div class="card-header-custom">
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-file-text me-2 text-primary"></i> Request Details</h5>
+        </div>
+        <div class="card-body p-4">
+          
+          <div class="d-flex justify-content-between align-items-start mb-4">
+             <div>
+               <span class="badge bg-primary bg-opacity-10 text-primary mb-1">Control Number</span>
+               <h3 class="fw-bold text-dark letter-spacing-1"><?= htmlspecialchars($row['control_no']) ?></h3>
+             </div>
+             <div class="text-end">
+                <small class="text-muted d-block">Document Type</small>
+                <span class="fw-bold text-primary"><?= htmlspecialchars($row['document_type']) ?></span>
+             </div>
+          </div>
 
-      <?php if (isset($msg)): ?>
-        <div class="alert alert-success"><?= $msg ?></div>
-      <?php endif; ?>
+          <div class="info-group">
+             <span class="info-label"><i class="bi bi-person me-1"></i> Full Name</span>
+             <div class="info-value fs-5"><?= htmlspecialchars($row['fullname']) ?></div>
+          </div>
 
-      <?php if (isset($error)): ?>
-        <div class="alert alert-danger"><?= $error ?></div>
-      <?php endif; ?>
+          <div class="row">
+            <div class="col-md-6">
+                <div class="info-group">
+                    <span class="info-label"><i class="bi bi-phone me-1"></i> Contact Number</span>
+                    <div class="info-value"><?= htmlspecialchars($row['contact']) ?></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-group">
+                    <span class="info-label"><i class="bi bi-person-badge me-1"></i> Valid ID Presented</span>
+                    <div class="info-value"><?= htmlspecialchars($row['valid_id']) ?></div>
+                </div>
+            </div>
+          </div>
 
-      <p><strong>Control No:</strong> <?= htmlspecialchars($row['control_no']) ?></p>
-      <p><strong>Name:</strong> <?= htmlspecialchars($row['fullname']) ?></p>
-      <p><strong>Address:</strong><br><?= nl2br(htmlspecialchars($row['address'])) ?></p>
-      <p><strong>Contact:</strong> <?= htmlspecialchars($row['contact']) ?></p>
-      <p><strong>Document:</strong> <?= htmlspecialchars($row['document_type']) ?></p>
-      <p><strong>Purpose:</strong><br><?= nl2br(htmlspecialchars($row['purpose'])) ?></p>
-      <p><strong>Valid ID:</strong> <?= htmlspecialchars($row['valid_id']) ?></p>
+          <div class="info-group">
+             <span class="info-label"><i class="bi bi-geo-alt me-1"></i> Address</span>
+             <div class="info-value"><?= nl2br(htmlspecialchars($row['address'])) ?></div>
+          </div>
 
-      <hr>
+          <div class="info-group">
+             <span class="info-label"><i class="bi bi-card-text me-1"></i> Purpose</span>
+             <div class="info-value bg-light p-3 rounded text-secondary border">
+                 <?= nl2br(htmlspecialchars($row['purpose'])) ?>
+             </div>
+          </div>
 
-      <!-- UPDATE FORM -->
-      <form method="POST">
-
-        <label class="form-label">Status</label>
-        <select name="status" class="form-select mb-3" required>
-          <option value="Pending" <?= $row['status']=="Pending" ? "selected" : "" ?>>Pending</option>
-          <option value="Approved" <?= $row['status']=="Approved" ? "selected" : "" ?>>Approved</option>
-          <option value="Released" <?= $row['status']=="Released" ? "selected" : "" ?>>Released</option>
-          <option value="Rejected" <?= $row['status']=="Rejected" ? "selected" : "" ?>>Rejected</option>
-        </select>
-
-        <label class="form-label">Admin Remarks</label>
-        <textarea name="admin_remarks" class="form-control mb-3" rows="4"><?= htmlspecialchars($row['admin_remarks']) ?></textarea>
-
-        <button name="update" class="btn btn-primary w-100">Save Changes</button>
-      </form>
-
-      <a href="admin.php" class="btn btn-secondary mt-3 w-100">Back to Dashboard</a>
-
+        </div>
+      </div>
     </div>
+
+    <!-- RIGHT COLUMN: UPDATE FORM -->
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header-custom bg-light">
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-gear-fill me-2 text-secondary"></i> Process Request</h5>
+        </div>
+        <div class="card-body p-4">
+
+          <?php if (isset($msg)): ?>
+            <div class="alert alert-success d-flex align-items-center mb-4 border-0 shadow-sm">
+                <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                <div><?= $msg ?></div>
+            </div>
+          <?php endif; ?>
+
+          <?php if (isset($error)): ?>
+            <div class="alert alert-danger d-flex align-items-center mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div><?= $error ?></div>
+            </div>
+          <?php endif; ?>
+
+          <form method="POST">
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold text-secondary small">UPDATE STATUS</label>
+                <select name="status" class="form-select form-select-lg" required>
+                  <option value="Pending" <?= $row['status']=="Pending" ? "selected" : "" ?>>Pending</option>
+                  <option value="Approved" <?= $row['status']=="Approved" ? "selected" : "" ?>>Approved</option>
+                  <option value="Released" <?= $row['status']=="Released" ? "selected" : "" ?>>Released</option>
+                  <option value="Declined" <?= $row['status']=="Declined" ? "selected" : "" ?>>Declined</option>
+                </select>
+                <div class="form-text">Update the current stage of this request.</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold text-secondary small">ADMIN REMARKS / NOTES</label>
+                <textarea name="admin_remarks" class="form-control" rows="5" placeholder="Add notes for the applicant or internal records..."><?= htmlspecialchars($row['admin_remarks']) ?></textarea>
+            </div>
+
+            <button name="update" class="btn btn-primary btn-update w-100 mb-3">
+              <i class="bi bi-save me-2"></i> Save Changes
+            </button>
+            
+            <a href="admin.php" class="btn btn-outline-secondary w-100 border-0">
+               Cancel & Return
+            </a>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<footer class="text-center mt-5 text-muted">
+<footer class="text-center mt-5 mb-4 text-muted small">
   © 2026 Barangay Document System
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

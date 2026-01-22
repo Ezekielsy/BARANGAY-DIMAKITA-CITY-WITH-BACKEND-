@@ -38,7 +38,6 @@ if (isset($_POST['submit'])) {
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* --- THEME SETTINGS --- */
     :root {
       --primary-color: #2a5298;
       --secondary-color: #1e3c72;
@@ -52,7 +51,6 @@ if (isset($_POST['submit'])) {
       overflow-x: hidden;
     }
 
-    /* --- HERO SECTION --- */
     .hero {
       background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
       color: white;
@@ -84,7 +82,6 @@ if (isset($_POST['submit'])) {
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    /* --- INFO CARDS --- */
     .service-card {
       background: white;
       border-radius: 20px;
@@ -105,7 +102,6 @@ if (isset($_POST['submit'])) {
       margin-bottom: 15px;
     }
 
-    /* --- FORM STYLES --- */
     .main-card {
       border: none;
       border-radius: 20px;
@@ -124,7 +120,6 @@ if (isset($_POST['submit'])) {
       box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
     }
 
-    /* --- FOOTER --- */
     footer {
       background: #343a40;
       color: #adb5bd;
@@ -132,7 +127,6 @@ if (isset($_POST['submit'])) {
       margin-top: 80px;
     }
 
-    /* --- ANIMATION UTILS --- */
     .fade-in-up {
       animation: fadeInUp 0.8s ease-out;
     }
@@ -211,10 +205,7 @@ if (isset($_POST['submit'])) {
   <div class="row justify-content-center">
     <div class="col-lg-8">
 
-      <!-- REQUEST CARD -->
       <div class="card main-card mb-5 bg-white">
-        
-        <!-- SUCCESS STATE -->
         <?php if ($success_control_no != ""): ?>
           <div class="card-body p-5 text-center fade-in-up">
             <div class="mb-4">
@@ -236,8 +227,6 @@ if (isset($_POST['submit'])) {
               <a href="index.php" class="btn btn-outline-primary rounded-pill px-4">Submit Another Request</a>
             </div>
           </div>
-
-        <!-- FORM STATE -->
         <?php else: ?>
           <div class="card-body p-5">
             <div class="d-flex align-items-center mb-4">
@@ -328,7 +317,6 @@ if (isset($_POST['submit'])) {
 </div>
 
 <!-- TRACK SECTION -->
-<!-- Logic: If track was posted, remove 'd-none', otherwise keep it hidden -->
 <div class="container pb-5 <?php echo isset($_POST['track']) ? '' : 'd-none'; ?>" id="track_section">
   <div class="row justify-content-center">
     <div class="col-md-6">
@@ -338,7 +326,6 @@ if (isset($_POST['submit'])) {
             
             <form method="POST">
                 <div class="input-group mb-3">
-                    <!-- Added VALUE attribute here to keep the number visible -->
                     <input type="text" name="track_no" 
                            class="form-control form-control-lg" 
                            placeholder="Enter Control No." 
@@ -351,20 +338,27 @@ if (isset($_POST['submit'])) {
             <?php
             if (isset($_POST['track'])) {
               $code = mysqli_real_escape_string($conn, $_POST['track_no']);
-              $res = mysqli_query($conn, "SELECT status FROM requests WHERE control_no='$code'");
+              $res = mysqli_query($conn, "SELECT status, admin_remarks FROM requests WHERE control_no='$code'");
 
               if (mysqli_num_rows($res) > 0) {
                 $row = mysqli_fetch_assoc($res);
                 $st = $row['status'];
+                $remarks = $row['admin_remarks'];
                 $cls = "bg-warning"; 
                 if($st=="Approved") $cls="bg-success";
                 if($st=="Released") $cls="bg-primary";
                 
-                // Status "Flash" Display
                 echo "<div class='mt-4 fade-in-up p-3 bg-light rounded border border-secondary border-opacity-25'>
                         <h6 class='text-muted small text-uppercase mb-2'>Current Status</h6>
                         <span class='badge $cls fs-4 px-4 py-2 rounded-pill shadow-sm'>$st</span>
                       </div>";
+
+                if (!empty($remarks)) {
+                    echo "<div class='mt-3 p-3 border rounded bg-white shadow-sm text-start'>
+                            <h6 class='text-secondary small mb-1'>Admin Remarks / Notes</h6>
+                            <p class='mb-0'>$remarks</p>
+                          </div>";
+                }
               } else {
                 echo "<div class='alert alert-danger mt-3 fade-in-up'>
                         <i class='bi bi-exclamation-circle-fill'></i> Control Number Not Found
@@ -387,7 +381,6 @@ if (isset($_POST['submit'])) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Prevent Resubmission
 if ( window.history.replaceState ) {
   window.history.replaceState( null, null, window.location.href );
 }
@@ -400,8 +393,6 @@ function showTrack() {
   }, 100);
 }
 
-// AUTO SCROLL TO TRACKING RESULT
-// If PHP performed a tracking search, automatically scroll down to the section
 <?php if(isset($_POST['track'])): ?>
 document.addEventListener("DOMContentLoaded", function() {
     showTrack();
@@ -419,17 +410,17 @@ function showTime() {
     "Certificate of Residency": "Processing: 1–2 working days",
     "Certificate of Indigency": "Processing: 1–2 working days",
     "Certificate of Good Moral Character": "Processing: 2 working days",
-    "Business Clearance": "Processing: 2–3 working days",
+    "Business Clearance": "Processing: 3 working days",
     "Barangay Business Permit": "Processing: 3–5 working days",
-    "Barangay ID Application": "Processing: 5–7 working days",
-    "Barangay ID Renewal": "Processing: 3–5 working days",
-    "Senior Citizen Certification": "Processing: 1–2 working days",
-    "PWD Certification": "Processing: 1–2 working days",
-    "Blotter Report Request": "Processing: 2–3 working days",
+    "Barangay ID Application": "Processing: 2–3 working days",
+    "Barangay ID Renewal": "Processing: 1 working day",
+    "Senior Citizen Certification": "Processing: 1 working day",
+    "PWD Certification": "Processing: 1 working day",
+    "Blotter Report Request": "Processing: 2 working days",
     "Incident Report": "Processing: 2–3 working days"
   };
 
-  if (times[doc]) {
+  if(times[doc]) {
     txt.innerText = times[doc];
     box.classList.remove("d-none");
   } else {

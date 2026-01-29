@@ -147,6 +147,7 @@ if (isset($_POST['track'])) {
 
     footer { background: #343a40; color: #adb5bd; padding: 40px 0; margin-top: 80px; }
 
+    /* Fade-in animation */
     .fade-in-up { animation: fadeInUp 0.8s ease-out; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -157,7 +158,7 @@ if (isset($_POST['track'])) {
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-absolute w-100" style="z-index: 9;">
   <div class="container mt-2">
-    <a class="navbar-brand fw-bold" href="#">
+    <a class="navbar-brand fw-bold" href="landingpage.php">
       <i class="bi bi-building-fill"></i> Brgy. Dimakita
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
@@ -166,7 +167,7 @@ if (isset($_POST['track'])) {
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
-        <li class="nav-item"><a class="nav-link" href="#request_section">Request</a></li>
+        <li class="nav-item"><a class="nav-link" href="#request_section" onclick="showRequestForm()">Request</a></li>
         <li class="nav-item"><a class="nav-link" href="#track_section" onclick="showTrack()">Track Status</a></li>
       </ul>
     </div>
@@ -182,7 +183,7 @@ if (isset($_POST['track'])) {
       Experience fast, transparent, and convenient document processing for the people of Lupalok City.
     </p>
     <div class="d-flex justify-content-center gap-3">
-      <a href="#request_section" class="btn btn-hero shadow">Request Document</a>
+      <a href="javascript:void(0)" class="btn btn-hero shadow" onclick="showRequestForm()">Request Document</a>
       <a href="#track_section" onclick="showTrack()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold" style="border-width: 2px;">Track Status</a>
     </div>
   </div>
@@ -219,7 +220,8 @@ if (isset($_POST['track'])) {
 <div class="container" id="request_section">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <div class="card main-card mb-5 bg-white">
+      <!-- Request Form Card -->
+      <div class="card main-card mb-5 bg-white d-none" id="request_form_card">
         
         <!-- SUCCESS STATE -->
         <?php if ($success_control_no != ""): ?>
@@ -246,7 +248,7 @@ if (isset($_POST['track'])) {
 
         <!-- FORM STATE -->
         <?php else: ?>
-          <div class="card-body p-5">
+          <div class="card-body p-5 fade-in-up">
             <div class="d-flex align-items-center mb-4">
                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                  <i class="bi bi-pencil-fill"></i>
@@ -371,31 +373,10 @@ if (isset($_POST['track'])) {
                   if($status=="Approved") $badge_class="bg-success";
                   if($status=="Released") $badge_class="bg-primary";
 
-                  echo "<div class='mt-4 fade-in-up p-3 bg-light rounded border border-secondary border-opacity-25'>
-                          <h6 class='text-muted small text-uppercase mb-2'>Current Status</h6>
-                          <span class='badge $badge_class fs-4 px-4 py-2 rounded-pill shadow-sm'>$status</span>
-                        </div>";
-
-                  // Show uploaded ID
-                  if(!empty($row['valid_id_file'])) {
-                      echo "<div class='mt-3'>
-                              <h6 class='text-muted small text-uppercase mb-2'>Uploaded ID</h6>
-                              <img src='uploads/".htmlspecialchars($row['valid_id_file'])."' class='img-fluid rounded' style='max-height:200px;'>
-                            </div>";
-                  }
-
-                  // Show admin remarks / notes
-                  if(!empty($row['admin_remarks'])) {
-                      echo "<div class='mt-3'>
-                              <h6 class='text-muted small text-uppercase mb-2'>Admin Remarks / Notes</h6>
-                              <div class='p-3 bg-white border rounded shadow-sm'>"
-                                  . nl2br(htmlspecialchars($row['admin_remarks'])) .
-                              "</div>
-                            </div>";
-                  }
-
+                  echo "<div class='alert $badge_class mt-3 fw-bold'>Status: $status</div>";
+                  if(!empty($row['admin_remarks'])) echo "<div class='text-muted small mt-1'>Remarks: ".$row['admin_remarks']."</div>";
               } else {
-                  echo "<div class='alert alert-danger mt-4'>Control number not found.</div>";
+                  echo "<div class='alert alert-danger mt-3'>Control Number not found.</div>";
               }
           }
           ?>
@@ -405,39 +386,54 @@ if (isset($_POST['track'])) {
   </div>
 </div>
 
-
 <!-- FOOTER -->
 <footer class="text-center">
-  <div class="container">
-    <p class="mb-0 small">&copy; <?php echo date("Y"); ?> Barangay Dimakita. All rights reserved.</p>
-  </div>
+  <p class="mb-0">&copy; <?php echo date('Y'); ?> Barangay Dimakita. All rights reserved.</p>
 </footer>
 
 <!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-  function showTrack() {
-    document.getElementById('track_section').classList.remove('d-none');
-    document.getElementById('track_section').scrollIntoView({behavior: 'smooth'});
+  // Show Request Form
+  function showRequestForm(){
+    const card = document.getElementById('request_form_card');
+    if(card.classList.contains('d-none')){
+      card.classList.remove('d-none');
+      card.scrollIntoView({behavior: 'smooth'});
+    }
   }
 
-  function showTime() {
-    let doc = document.getElementById('document_type').value;
-    let container = document.getElementById('processing_time');
-    let text = document.getElementById('time_text');
-    if(doc==="") {
-      container.classList.add('d-none');
-      return;
+  // Show Track Section
+  function showTrack(){
+    const trackSection = document.getElementById('track_section');
+    if(trackSection.classList.contains('d-none')){
+      trackSection.classList.remove('d-none');
+      trackSection.scrollIntoView({behavior: 'smooth'});
     }
+  }
 
-    let days = 1;
-    if(["Barangay Clearance","Certificate of Residency"].includes(doc)) days = 1;
-    if(["Barangay ID Application","Barangay ID Renewal"].includes(doc)) days = 2;
-    if(["Blotter Report Request","Incident Report"].includes(doc)) days = 3;
-    if(["Business Clearance","Barangay Business Permit"].includes(doc)) days = 5;
-
-    container.classList.remove('d-none');
-    text.textContent = `Estimated processing time: ${days} day(s)`;
+  // Show Estimated Processing Time
+  function showTime(){
+    const doc = document.getElementById('document_type').value;
+    const timeDiv = document.getElementById('processing_time');
+    const timeText = document.getElementById('time_text');
+    let msg = "";
+    switch(doc){
+      case "Barangay Clearance": msg="Processing: 1-2 business days"; break;
+      case "Certificate of Residency": msg="Processing: 1 day"; break;
+      case "Barangay ID Application":
+      case "Barangay ID Renewal": msg="Processing: 3-5 business days"; break;
+      case "Blotter Report Request":
+      case "Incident Report": msg="Processing: 2-3 business days"; break;
+      default: msg="Processing: 1-2 business days";
+    }
+    if(doc==""){
+      timeDiv.classList.add('d-none');
+    } else {
+      timeDiv.classList.remove('d-none');
+      timeText.textContent = msg;
+    }
   }
 </script>
 

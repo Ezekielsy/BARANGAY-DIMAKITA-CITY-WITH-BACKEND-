@@ -1,15 +1,31 @@
 <?php
 include "db/config.php";
-$success=false;
+$success = false;
 
 if(isset($_GET['code'])){
-  $code=$_GET['code'];
-  $res=mysqli_query($conn,
-    "SELECT * FROM users WHERE verification_code='$code' AND is_verified=0");
-  if(mysqli_num_rows($res)==1){
-    mysqli_query($conn,
-      "UPDATE users SET is_verified=1,verification_code=NULL WHERE verification_code='$code'");
-    $success=true;
+  $code = $_GET['code'];
+
+  // Kunin muna user by code
+  $res = mysqli_query($conn,
+    "SELECT * FROM users 
+     WHERE verification_code='$code' 
+     AND is_verified=0");
+
+  if(mysqli_num_rows($res) == 1){
+    $row = mysqli_fetch_assoc($res);
+    $email = $row['email'];
+
+    // CHECK DOMAIN
+    if(str_ends_with($email, "@brgdimakita.com")){
+      mysqli_query($conn,
+        "UPDATE users 
+         SET is_verified=1, verification_code=NULL 
+         WHERE verification_code='$code'");
+      $success = true;
+    } else {
+      // email not allowed → FAIL
+      $success = false;
+    }
   }
 }
 ?>

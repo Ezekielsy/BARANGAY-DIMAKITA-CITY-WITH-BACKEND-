@@ -13,12 +13,50 @@ if (isset($_POST['submit'])) {
     $document = mysqli_real_escape_string($conn, $_POST['document_type']);
     $purpose  = mysqli_real_escape_string($conn, $_POST['purpose']);
     $valid_id = mysqli_real_escape_string($conn, $_POST['valid_id']);
+    $valid_id_file = null;
 
-    $sql = "INSERT INTO requests (control_no, fullname, address, contact, document_type, purpose, valid_id)
-            VALUES ('$control_no','$fullname','$address','$contact','$document','$purpose','$valid_id')";
+    // Handle Valid ID file upload
+    if(isset($_FILES['valid_id_file']) && $_FILES['valid_id_file']['error'] == 0) {
+        $allowed_ext = ['jpg','jpeg','png'];
+        $file_name = $_FILES['valid_id_file']['name'];
+        $file_tmp  = $_FILES['valid_id_file']['tmp_name'];
+        $file_size = $_FILES['valid_id_file']['size'];
+        $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        if(in_array($ext, $allowed_ext) && $file_size <= 2*1024*1024){ // Max 2MB
+            $new_name = uniqid('id_').".".$ext;
+            $upload_dir = 'uploads/';
+            if(!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+            move_uploaded_file($file_tmp, $upload_dir.$new_name);
+            $valid_id_file = $new_name;
+        } else {
+            echo "<script>alert('Invalid file type or size. Only JPG/PNG under 2MB allowed.');</script>";
+        }
+    } else {
+        echo "<script>alert('Please upload a valid ID image.');</script>";
+    }
+
+    // Insert request into DB
+    $sql = "INSERT INTO requests (control_no, fullname, address, contact, document_type, purpose, valid_id, valid_id_file)
+            VALUES ('$control_no','$fullname','$address','$contact','$document','$purpose','$valid_id','$valid_id_file')";
 
     if (mysqli_query($conn, $sql)) {
         $success_control_no = $control_no;
+    }
+}
+
+// Check if tracking form submitted
+$track_result = null;
+$show_track_section = false;
+if (isset($_POST['track'])) {
+    $show_track_section = true; // Show track section
+    $code = mysqli_real_escape_string($conn, $_POST['track_no']);
+    $res = mysqli_query($conn, "SELECT status, valid_id_file, admin_remarks FROM requests WHERE control_no='$code'");
+
+    if (mysqli_num_rows($res) > 0) {
+        $track_result = mysqli_fetch_assoc($res);
+    } else {
+        $track_result = false; // Not found
     }
 }
 ?>
@@ -61,11 +99,7 @@ if (isset($_POST['submit'])) {
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     
-    .hero h1 {
-      font-weight: 700;
-      font-size: 3rem;
-      margin-bottom: 20px;
-    }
+    .hero h1 { font-weight: 700; font-size: 3rem; margin-bottom: 20px; }
 
     .btn-hero {
       background-color: white;
@@ -96,18 +130,9 @@ if (isset($_POST['submit'])) {
       box-shadow: 0 15px 30px rgba(0,0,0,0.08);
       border-color: var(--accent-color);
     }
-    .icon-box {
-      font-size: 2.5rem;
-      color: var(--primary-color);
-      margin-bottom: 15px;
-    }
+    .icon-box { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
 
-    .main-card {
-      border: none;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
+    .main-card { border: none; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); overflow: hidden; }
     .form-control, .form-select {
       border-radius: 10px;
       padding: 12px;
@@ -120,20 +145,10 @@ if (isset($_POST['submit'])) {
       box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
     }
 
-    footer {
-      background: #343a40;
-      color: #adb5bd;
-      padding: 40px 0;
-      margin-top: 80px;
-    }
+    footer { background: #343a40; color: #adb5bd; padding: 40px 0; margin-top: 80px; }
 
-    .fade-in-up {
-      animation: fadeInUp 0.8s ease-out;
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .fade-in-up { animation: fadeInUp 0.8s ease-out; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 
@@ -152,7 +167,7 @@ if (isset($_POST['submit'])) {
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
         <li class="nav-item"><a class="nav-link" href="#request_section">Request</a></li>
-        <li class="nav-item"><a class="nav-link" href="#track_section" onclick="showTrack()">Track</a></li>
+        <li class="nav-item"><a class="nav-link" href="#track_section" onclick="showTrack()">Track Status</a></li>
       </ul>
     </div>
   </div>
@@ -204,8 +219,9 @@ if (isset($_POST['submit'])) {
 <div class="container" id="request_section">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-
       <div class="card main-card mb-5 bg-white">
+        
+        <!-- SUCCESS STATE -->
         <?php if ($success_control_no != ""): ?>
           <div class="card-body p-5 text-center fade-in-up">
             <div class="mb-4">
@@ -227,6 +243,8 @@ if (isset($_POST['submit'])) {
               <a href="index.php" class="btn btn-outline-primary rounded-pill px-4">Submit Another Request</a>
             </div>
           </div>
+
+        <!-- FORM STATE -->
         <?php else: ?>
           <div class="card-body p-5">
             <div class="d-flex align-items-center mb-4">
@@ -239,7 +257,7 @@ if (isset($_POST['submit'])) {
                </div>
             </div>
             
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
               <div class="row g-3">
                 <div class="col-md-12">
                    <label class="form-label small text-muted fw-bold">FULL NAME</label>
@@ -262,7 +280,13 @@ if (isset($_POST['submit'])) {
                     </select>
                 </div>
 
-                <div class="col-md-12">
+                <div class="col-md-6">
+                   <label class="form-label small text-muted fw-bold">UPLOAD YOUR ID</label>
+                   <input type="file" name="valid_id_file" class="form-control" accept=".jpg,.jpeg,.png" required>
+                   <small class="text-muted">Max size 2MB. JPG/PNG only.</small>
+                </div>
+
+                <div class="col-md-6">
                    <label class="form-label small text-muted fw-bold">ADDRESS</label>
                    <input type="text" name="address" class="form-control" placeholder="House No., Street, Purok" required>
                 </div>
@@ -320,113 +344,101 @@ if (isset($_POST['submit'])) {
 <div class="container pb-5 <?php echo isset($_POST['track']) ? '' : 'd-none'; ?>" id="track_section">
   <div class="row justify-content-center">
     <div class="col-md-6">
-       <div class="card main-card border-top border-4 border-success">
-         <div class="card-body p-5 text-center">
-            <h4 class="fw-bold mb-3">Track Your Request</h4>
-            
-            <form method="POST">
-                <div class="input-group mb-3">
-                    <input type="text" name="track_no" 
-                           class="form-control form-control-lg" 
-                           placeholder="Enter Control No." 
-                           value="<?php echo isset($_POST['track_no']) ? htmlspecialchars($_POST['track_no']) : ''; ?>"
-                           required>
-                    <button name="track" class="btn btn-success px-4">Search</button>
-                </div>
-            </form>
+      <div class="card main-card border-top border-4 border-success">
+        <div class="card-body p-5 text-center">
+          <h4 class="fw-bold mb-3">Track Your Request</h4>
 
-            <?php
-            if (isset($_POST['track'])) {
+          <form method="POST">
+            <div class="input-group mb-3">
+              <input type="text" name="track_no"
+                     class="form-control form-control-lg"
+                     placeholder="Enter Control No."
+                     value="<?php echo isset($_POST['track_no']) ? htmlspecialchars($_POST['track_no']) : ''; ?>"
+                     required>
+              <button name="track" class="btn btn-success px-4">Search</button>
+            </div>
+          </form>
+
+          <?php
+          if (isset($_POST['track'])) {
               $code = mysqli_real_escape_string($conn, $_POST['track_no']);
-              $res = mysqli_query($conn, "SELECT status, admin_remarks FROM requests WHERE control_no='$code'");
+              $res = mysqli_query($conn, "SELECT status, valid_id_file, admin_remarks FROM requests WHERE control_no='$code'");
 
               if (mysqli_num_rows($res) > 0) {
-                $row = mysqli_fetch_assoc($res);
-                $st = $row['status'];
-                $remarks = $row['admin_remarks'];
-                $cls = "bg-warning"; 
-                if($st=="Approved") $cls="bg-success";
-                if($st=="Released") $cls="bg-primary";
-                
-                echo "<div class='mt-4 fade-in-up p-3 bg-light rounded border border-secondary border-opacity-25'>
-                        <h6 class='text-muted small text-uppercase mb-2'>Current Status</h6>
-                        <span class='badge $cls fs-4 px-4 py-2 rounded-pill shadow-sm'>$st</span>
-                      </div>";
+                  $row = mysqli_fetch_assoc($res);
+                  $status = $row['status'];
+                  $badge_class = "bg-warning";
+                  if($status=="Approved") $badge_class="bg-success";
+                  if($status=="Released") $badge_class="bg-primary";
 
-                if (!empty($remarks)) {
-                    echo "<div class='mt-3 p-3 border rounded bg-white shadow-sm text-start'>
-                            <h6 class='text-secondary small mb-1'>Admin Remarks / Notes</h6>
-                            <p class='mb-0'>$remarks</p>
-                          </div>";
-                }
+                  echo "<div class='mt-4 fade-in-up p-3 bg-light rounded border border-secondary border-opacity-25'>
+                          <h6 class='text-muted small text-uppercase mb-2'>Current Status</h6>
+                          <span class='badge $badge_class fs-4 px-4 py-2 rounded-pill shadow-sm'>$status</span>
+                        </div>";
+
+                  // Show uploaded ID
+                  if(!empty($row['valid_id_file'])) {
+                      echo "<div class='mt-3'>
+                              <h6 class='text-muted small text-uppercase mb-2'>Uploaded ID</h6>
+                              <img src='uploads/".htmlspecialchars($row['valid_id_file'])."' class='img-fluid rounded' style='max-height:200px;'>
+                            </div>";
+                  }
+
+                  // Show admin remarks / notes
+                  if(!empty($row['admin_remarks'])) {
+                      echo "<div class='mt-3'>
+                              <h6 class='text-muted small text-uppercase mb-2'>Admin Remarks / Notes</h6>
+                              <div class='p-3 bg-white border rounded shadow-sm'>"
+                                  . nl2br(htmlspecialchars($row['admin_remarks'])) .
+                              "</div>
+                            </div>";
+                  }
+
               } else {
-                echo "<div class='alert alert-danger mt-3 fade-in-up'>
-                        <i class='bi bi-exclamation-circle-fill'></i> Control Number Not Found
-                      </div>";
+                  echo "<div class='alert alert-danger mt-4'>Control number not found.</div>";
               }
-            }
-            ?>
-         </div>
-       </div>
+          }
+          ?>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+
+<!-- FOOTER -->
 <footer class="text-center">
   <div class="container">
-    <p class="mb-0 fw-bold">Barangay Dimakita, Lupalok City</p>
-    <small class="opacity-50">© 2026 Document Request System</small>
+    <p class="mb-0 small">&copy; <?php echo date("Y"); ?> Barangay Dimakita. All rights reserved.</p>
   </div>
 </footer>
 
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-if ( window.history.replaceState ) {
-  window.history.replaceState( null, null, window.location.href );
-}
-
-function showTrack() {
-  let t = document.getElementById("track_section");
-  t.classList.remove("d-none");
-  setTimeout(() => {
-      t.scrollIntoView({ behavior: "smooth" });
-  }, 100);
-}
-
-<?php if(isset($_POST['track'])): ?>
-document.addEventListener("DOMContentLoaded", function() {
-    showTrack();
-});
-<?php endif; ?>
-
-function showTime() {
-  let doc = document.getElementById("document_type").value;
-  let box = document.getElementById("processing_time");
-  let txt = document.getElementById("time_text");
-
-  let times = {
-    "Barangay Clearance": "Processing: 1 working day",
-    "Barangay Certificate": "Processing: Same day release",
-    "Certificate of Residency": "Processing: 1–2 working days",
-    "Certificate of Indigency": "Processing: 1–2 working days",
-    "Certificate of Good Moral Character": "Processing: 2 working days",
-    "Business Clearance": "Processing: 3 working days",
-    "Barangay Business Permit": "Processing: 3–5 working days",
-    "Barangay ID Application": "Processing: 2–3 working days",
-    "Barangay ID Renewal": "Processing: 1 working day",
-    "Senior Citizen Certification": "Processing: 1 working day",
-    "PWD Certification": "Processing: 1 working day",
-    "Blotter Report Request": "Processing: 2 working days",
-    "Incident Report": "Processing: 2–3 working days"
-  };
-
-  if(times[doc]) {
-    txt.innerText = times[doc];
-    box.classList.remove("d-none");
-  } else {
-    box.classList.add("d-none");
+  function showTrack() {
+    document.getElementById('track_section').classList.remove('d-none');
+    document.getElementById('track_section').scrollIntoView({behavior: 'smooth'});
   }
-}
+
+  function showTime() {
+    let doc = document.getElementById('document_type').value;
+    let container = document.getElementById('processing_time');
+    let text = document.getElementById('time_text');
+    if(doc==="") {
+      container.classList.add('d-none');
+      return;
+    }
+
+    let days = 1;
+    if(["Barangay Clearance","Certificate of Residency"].includes(doc)) days = 1;
+    if(["Barangay ID Application","Barangay ID Renewal"].includes(doc)) days = 2;
+    if(["Blotter Report Request","Incident Report"].includes(doc)) days = 3;
+    if(["Business Clearance","Barangay Business Permit"].includes(doc)) days = 5;
+
+    container.classList.remove('d-none');
+    text.textContent = `Estimated processing time: ${days} day(s)`;
+  }
 </script>
 
 </body>

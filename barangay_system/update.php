@@ -32,6 +32,15 @@ if (isset($_POST['update'])) {
     $status  = mysqli_real_escape_string($conn, $_POST['status']);
     $remarks = mysqli_real_escape_string($conn, $_POST['admin_remarks']);
 
+    // Auto-fill remarks for Approved and Released if empty
+    if (($status == "Approved" || $status == "Released") && empty(trim($remarks))) {
+        if ($status == "Approved") {
+            $remarks = "Request approved by Barangay Admin.";
+        } elseif ($status == "Released") {
+            $remarks = "Request is ready for release. Applicant may claim at the Barangay.";
+        }
+    }
+
     // Prepare update query
     $sql = "UPDATE requests
             SET status='$status', admin_remarks='$remarks'
@@ -57,9 +66,7 @@ if (isset($_POST['update'])) {
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -67,28 +74,21 @@ if (isset($_POST['update'])) {
       font-family: 'Poppins', sans-serif;
       background-color: #f4f7f6;
     }
-
-    /* Navbar Gradient */
     .navbar-custom {
       background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
-    /* Cards */
     .card {
       border: none;
       border-radius: 15px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.05);
       overflow: hidden;
     }
-    
     .card-header-custom {
       background-color: #fff;
       border-bottom: 1px solid #eee;
       padding: 20px 25px;
     }
-
-    /* Details List */
     .info-group {
       margin-bottom: 15px;
       padding-bottom: 15px;
@@ -110,8 +110,6 @@ if (isset($_POST['update'])) {
       font-weight: 500;
       color: #2c3e50;
     }
-
-    /* Form Elements */
     .form-control, .form-select {
       border-radius: 10px;
       padding: 12px;
@@ -121,7 +119,6 @@ if (isset($_POST['update'])) {
       border-color: #2a5298;
       box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
     }
-
     .btn-update {
       background: #2a5298;
       border: none;
@@ -133,6 +130,12 @@ if (isset($_POST['update'])) {
     .btn-update:hover {
       background: #1e3c72;
       transform: translateY(-2px);
+    }
+    .uploaded-id img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -151,7 +154,6 @@ if (isset($_POST['update'])) {
 </nav>
 
 <div class="container pb-5">
-
   <div class="row g-4">
     
     <!-- LEFT COLUMN: REQUEST INFO -->
@@ -189,6 +191,15 @@ if (isset($_POST['update'])) {
                 <div class="info-group">
                     <span class="info-label"><i class="bi bi-person-badge me-1"></i> Valid ID Presented</span>
                     <div class="info-value"><?= htmlspecialchars($row['valid_id']) ?></div>
+
+                    <?php if (!empty($row['valid_id_file']) && file_exists('uploads/'.$row['valid_id_file'])): ?>
+                        <div class="uploaded-id">
+                            <img src="uploads/<?= htmlspecialchars($row['valid_id_file']) ?>" alt="Uploaded Valid ID">
+                            <a href="uploads/<?= htmlspecialchars($row['valid_id_file']) ?>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View Full ID</a>
+                        </div>
+                    <?php else: ?>
+                        <small class="text-muted d-block mt-1">No uploaded ID file found.</small>
+                    <?php endif; ?>
                 </div>
             </div>
           </div>
@@ -235,7 +246,7 @@ if (isset($_POST['update'])) {
             
             <div class="mb-4">
                 <label class="form-label fw-bold text-secondary small">UPDATE STATUS</label>
-                <select name="status" class="form-select form-select-lg" required>
+                <select name="status" id="status_select" class="form-select form-select-lg" required onchange="autoRemarks()">
                   <option value="Pending" <?= $row['status']=="Pending" ? "selected" : "" ?>>Pending</option>
                   <option value="Approved" <?= $row['status']=="Approved" ? "selected" : "" ?>>Approved</option>
                   <option value="Released" <?= $row['status']=="Released" ? "selected" : "" ?>>Released</option>
@@ -244,9 +255,18 @@ if (isset($_POST['update'])) {
                 <div class="form-text">Update the current stage of this request.</div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4" id="remarks_container">
                 <label class="form-label fw-bold text-secondary small">ADMIN REMARKS / NOTES</label>
-                <textarea name="admin_remarks" class="form-control" rows="5" placeholder="Add notes for the applicant or internal records..."><?= htmlspecialchars($row['admin_remarks']) ?></textarea>
+
+                <!-- Dropdown for declined reasons -->
+                <select id="decline_reasons" class="form-select mb-2 d-none" onchange="fillDeclineReason()">
+                    <option value="">Select reason</option>
+                    <option value="Incomplete requirements">Incomplete requirements</option>
+                    <option value="Invalid ID presented">Invalid ID presented</option>
+                    <option value="Other">Other (type manually)</option>
+                </select>
+
+                <textarea name="admin_remarks" id="admin_remarks" class="form-control" rows="5" placeholder="Add notes for the applicant or internal records..."><?= htmlspecialchars($row['admin_remarks']) ?></textarea>
             </div>
 
             <button name="update" class="btn btn-primary btn-update w-100 mb-3">
@@ -271,5 +291,45 @@ if (isset($_POST['update'])) {
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function autoRemarks() {
+    const status = document.getElementById('status_select').value;
+    const remarks = document.getElementById('admin_remarks');
+    const declineDropdown = document.getElementById('decline_reasons');
+
+    if (status === "Approved") {
+        remarks.value = "Request approved by Barangay Admin.";
+        declineDropdown.classList.add('d-none');
+    } else if (status === "Released") {
+        remarks.value = "Request is ready for release. Applicant may claim at the Barangay.";
+        declineDropdown.classList.add('d-none');
+    } else if (status === "Declined") {
+        remarks.value = "";
+        declineDropdown.classList.remove('d-none');
+    } else {
+        remarks.value = "";
+        declineDropdown.classList.add('d-none');
+    }
+}
+
+function fillDeclineReason() {
+    const dropdown = document.getElementById('decline_reasons');
+    const remarks = document.getElementById('admin_remarks');
+    const value = dropdown.value;
+
+    if (value === "Other") {
+        remarks.value = "";
+        remarks.placeholder = "Type custom reason here...";
+    } else {
+        remarks.value = value;
+        remarks.placeholder = "";
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', autoRemarks);
+</script>
+
 </body>
 </html>

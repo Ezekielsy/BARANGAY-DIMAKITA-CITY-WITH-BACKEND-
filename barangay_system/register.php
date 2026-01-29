@@ -4,44 +4,23 @@ include "db/config.php";
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Register Account</title>
-  
+
   <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
   <style>
     body {
+      margin: 0;
       font-family: 'Poppins', sans-serif;
-      /* Same gradient as Login for seamless transition */
       background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 0;
     }
-
-    .card {
-      border: none;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-      overflow: hidden;
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .card-header-custom {
-      background: #fff;
-      padding: 30px 30px 10px;
-      text-align: center;
-    }
-
     .icon-circle {
       width: 60px;
       height: 60px;
@@ -54,23 +33,11 @@ include "db/config.php";
       font-size: 1.8rem;
       margin: 0 auto 15px;
     }
-
     .form-control {
       border-radius: 10px;
-      padding: 12px;
-      padding-left: 45px; /* Space for icon */
+      padding: 12px 12px 12px 45px;
       background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      transition: all 0.3s;
     }
-
-    .form-control:focus {
-      background-color: #fff;
-      border-color: #2a5298;
-      box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
-    }
-
-    /* Input Icon Positioning */
     .input-group-custom {
       position: relative;
       margin-bottom: 15px;
@@ -81,42 +48,27 @@ include "db/config.php";
       top: 50%;
       transform: translateY(-50%);
       color: #6c757d;
-      z-index: 10;
     }
-
     .btn-register {
       background: #2a5298;
-      border: none;
-      padding: 12px;
+      color: #fff;
       border-radius: 10px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      transition: all 0.3s;
+      padding: 12px;
       width: 100%;
-      color: white;
-      margin-top: 10px;
+      font-weight: 600;
+      border: none;
+      transition: background-color 0.3s;
     }
-    
     .btn-register:hover {
       background: #1e3c72;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
-    }
-
-    a {
-      text-decoration: none;
-      color: #2a5298;
-      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
-<div class="container d-flex justify-content-center">
-    
-  <div class="card p-2">
-    
-    <div class="card-header-custom">
+<div class="d-flex align-items-center justify-content-center min-vh-100 w-100">
+  <div class="card p-3" style="max-width: 450px; width: 100%;">
+    <div class="text-center mb-3">
       <div class="icon-circle">
         <i class="bi bi-person-plus-fill"></i>
       </div>
@@ -124,74 +76,102 @@ include "db/config.php";
       <p class="text-muted small">Verification is required after registration.</p>
     </div>
 
-    <div class="card-body px-4 pb-4">
-
-      <form method="POST">
-        
-        <!-- Full Name -->
+    <div class="card-body">
+      <form method="POST" novalidate>
         <div class="input-group-custom">
           <i class="bi bi-person-vcard input-icon"></i>
-          <input name="fullname" class="form-control" placeholder="Full Name" required>
+          <input name="fullname" class="form-control" placeholder="Full Name" required />
         </div>
 
-        <!-- Email -->
         <div class="input-group-custom">
           <i class="bi bi-envelope-at input-icon"></i>
-          <input name="email" type="email" class="form-control" placeholder="Email Address" required>
+          <input name="email" type="email" class="form-control" placeholder="Email Address" required />
         </div>
 
-        <!-- Username -->
         <div class="input-group-custom">
           <i class="bi bi-person input-icon"></i>
-          <input name="username" class="form-control" placeholder="Username" required>
+          <input name="username" class="form-control" placeholder="Username" required />
         </div>
 
-        <!-- Password -->
         <div class="input-group-custom">
           <i class="bi bi-lock input-icon"></i>
-          <input name="password" type="password" class="form-control" placeholder="Password" required>
+          <input name="password" type="password" class="form-control" placeholder="Password" required />
+          <small class="text-muted">Password must be at least 8 characters</small>
         </div>
 
-        <button name="register" class="btn btn-register">
-          Create Account
-        </button>
+        <button name="register" class="btn btn-register">Create Account</button>
       </form>
 
-      <?php
-      if(isset($_POST['register'])){
-        $code = md5(rand());
-        $pass = password_hash($_POST['password'],PASSWORD_DEFAULT);
+<?php
+if (isset($_POST['register'])) {
 
-        mysqli_query($conn,"INSERT INTO users
-        (fullname,email,username,password,verification_code)
-        VALUES
-        ('$_POST[fullname]','$_POST[email]','$_POST[username]','$pass','$code')");
+    // Sanitize inputs (basic)
+    $fullname = trim(mysqli_real_escape_string($conn, $_POST['fullname']));
+    $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
+    $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
+    $password_raw = $_POST['password'];
 
-        // Improved Alert Styling
+    // Validation
+    $allowedDomain = '@brgdimakita.com';
+
+    // Check domain restriction
+    if (!str_ends_with($email, $allowedDomain)) {
         echo "
-        <div class='alert alert-success mt-4 border-0 shadow-sm'>
-          <div class='d-flex'>
-             <div class='me-3'><i class='bi bi-send-check-fill fs-3'></i></div>
-             <div>
-                <strong>Verify Your Email</strong><br>
-                <span class='small'>For exhibit purposes, verify instantly:</span><br>
-                <a href='verify.php?code=$code' class='fw-bold text-decoration-underline text-success'>Click to Verify Account</a>
-             </div>
-          </div>
+        <div class='alert alert-danger mt-4'>
+          <strong>Registration Failed!</strong><br>
+          Only <b>$allowedDomain</b> email addresses are allowed.
         </div>";
-      }
-      ?>
+        exit;
+    }
+
+    // Check password length
+    if (strlen($password_raw) < 8) {
+        echo "
+        <div class='alert alert-danger mt-4'>
+          <strong>Registration Failed!</strong><br>
+          Password must be at least 8 characters long.
+        </div>";
+        exit;
+    }
+
+    // Check duplicate email
+    $checkEmailQuery = "SELECT * FROM users WHERE email = '$email'";
+    $result = mysqli_query($conn, $checkEmailQuery);
+    if (mysqli_num_rows($result) > 0) {
+        echo "
+        <div class='alert alert-danger mt-4'>
+          <strong>Registration Failed!</strong><br>
+          Email <b>$email</b> is already registered.
+        </div>";
+        exit;
+    }
+
+    // Everything good, insert user
+    $password = password_hash($password_raw, PASSWORD_DEFAULT);
+    $code = md5(rand());
+
+    mysqli_query($conn, "INSERT INTO users
+        (fullname, email, username, password, verification_code, is_verified)
+        VALUES
+        ('$fullname', '$email', '$username', '$password', '$code', 0)");
+
+    echo "
+    <div class='alert alert-success mt-4'>
+      <strong>Verify Your Email</strong><br>
+      <span class='small'>For exhibit purposes, verify instantly:</span><br>
+      <a href='verify.php?code=$code' class='fw-bold text-success'>
+        Click to Verify Account
+      </a>
+    </div>";
+}
+?>
 
       <div class="text-center mt-4 pt-3 border-top">
-        <span class="text-muted small">Already have an account?</span>
-        <div class="mt-1">
-            <a href='login.php'><i class="bi bi-arrow-left"></i> Back to Login</a>
-        </div>
+        <span class="text-muted small">Already have an account?</span><br />
+        <a href='login.php'><i class="bi bi-arrow-left"></i> Back to Login</a>
       </div>
-
     </div>
   </div>
-
 </div>
 
 </body>

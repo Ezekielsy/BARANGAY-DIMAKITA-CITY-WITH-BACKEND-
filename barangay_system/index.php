@@ -221,7 +221,8 @@ if (isset($_POST['track'])) {
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <!-- Request Form Card -->
-      <div class="card main-card mb-5 bg-white d-none" id="request_form_card">
+      <div class="card main-card mb-5 bg-white <?php echo isset($_POST['submit']) ? '' : 'd-none'; ?>" id="request_form_card">
+
         
         <!-- SUCCESS STATE -->
         <?php if ($success_control_no != ""): ?>
@@ -437,5 +438,17 @@ if (isset($_POST['track'])) {
   }
 </script>
 
-</body>
+</body> 
+<script>
+<?php if (isset($_POST['submit'])): ?>
+document.addEventListener("DOMContentLoaded", function () {
+    const card = document.getElementById("request_form_card");
+    if(card){
+        card.classList.remove("d-none");
+        card.scrollIntoView({ behavior: "smooth" });
+    }
+});
+<?php endif; ?>
+</script>
+
 </html>

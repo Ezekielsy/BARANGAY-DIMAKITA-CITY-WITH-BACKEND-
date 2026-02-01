@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welcome to Brgy Dimakita Online Portal</title>
+<title>Web-Based Barangay Document Request and Tracking System for Barangay Dimakita, San Lupalok City</title>
+
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -254,10 +255,14 @@ footer{
 
   <!-- GLASS CONTENT -->
   <div class="glass">
-    <h1>Barangay Dimakita Online Portal</h1>
-    <p class="mt-3">Fast, transparent, and convenient document processing for all residents.</p>
+    <h1>Web-Based Barangay Document Request & Tracking System</h1>
+    <p class="mt-3">
+      For Barangay Dimakita, San Lupalok City – fast, transparent, and convenient document processing for all residents.
+    </p>
     <a href="index.php" class="btn btn-portal mt-4">Go to Portal</a>
   </div>
+
+
 
 </section>
 

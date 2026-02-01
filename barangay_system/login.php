@@ -186,7 +186,7 @@ include "db/config.php";
         <p class="text-muted small mb-1">New Administrator?</p>
         <a href="register.php">Register Account</a>
         <div class="mt-2">
-            <a href="index.php" class="text-secondary small"><i class="bi bi-arrow-left"></i> Back to Home</a>
+            <a href="landingpage.php" class="text-secondary small"><i class="bi bi-arrow-left"></i> Back to Home</a>
         </div>
       </div>
 

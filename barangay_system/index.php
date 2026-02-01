@@ -145,6 +145,17 @@ if (isset($_POST['track'])) {
       box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
     }
 
+    .icon-box i {
+  font-size: 2.2rem;
+  color: var(--primary-color);
+}
+
+.card.main-card:hover {
+  transform: translateY(-6px);
+  transition: 0.3s ease;
+}
+
+
     footer { background: #343a40; color: #adb5bd; padding: 40px 0; margin-top: 80px; }
 
     /* Fade-in animation */
@@ -386,6 +397,84 @@ if (isset($_POST['track'])) {
     </div>
   </div>
 </div>
+
+<!-- CONTACT & EMERGENCY INFO -->
+<section class="container mb-5">
+  <div class="text-center mb-4">
+    <h3 class="fw-bold">Contact & Emergency Information</h3>
+    <p class="text-muted small">
+      Reach out to Barangay Dimakita for assistance and concerns
+    </p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Address -->
+    <div class="col-md-3">
+      <div class="card text-center main-card h-100">
+        <div class="card-body p-4">
+          <div class="icon-box mb-3">
+            <i class="bi bi-geo-alt-fill"></i>
+          </div>
+          <h6 class="fw-bold">Barangay Address</h6>
+          <p class="text-muted small mb-0">
+            Barangay Dimakita<br>
+            Lupalok City, Philippines
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hotline -->
+    <div class="col-md-3">
+      <div class="card text-center main-card h-100">
+        <div class="card-body p-4">
+          <div class="icon-box mb-3">
+            <i class="bi bi-telephone-fill"></i>
+          </div>
+          <h6 class="fw-bold">Barangay Hotline</h6>
+          <p class="text-muted small mb-0">
+            0912-345-6789<br>
+            (02) 8123-4567
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency / Tanod -->
+    <div class="col-md-3">
+      <div class="card text-center main-card h-100 border-top border-4 border-danger">
+        <div class="card-body p-4">
+          <div class="icon-box mb-3 text-danger">
+            <i class="bi bi-shield-fill-check"></i>
+          </div>
+          <h6 class="fw-bold">Emergency / Tanod</h6>
+          <p class="text-muted small mb-0">
+            24/7 Emergency Hotline<br>
+            0999-888-7777
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Office Hours -->
+    <div class="col-md-3">
+      <div class="card text-center main-card h-100">
+        <div class="card-body p-4">
+          <div class="icon-box mb-3">
+            <i class="bi bi-clock-fill"></i>
+          </div>
+          <h6 class="fw-bold">Office Hours</h6>
+          <p class="text-muted small mb-0">
+            Monday – Friday<br>
+            8:00 AM – 5:00 PM
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer class="text-center">
